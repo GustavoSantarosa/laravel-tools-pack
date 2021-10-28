@@ -39,7 +39,6 @@ class BaseController extends Controller
             $request->per_page = 50;
         }
 
-        //return response()->json($this->service->index($request),200);
         return ReturnPrepare::getMessageDTO($this->service->index($request, $this->model), 200);
     }
 
