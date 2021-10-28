@@ -1,0 +1,32 @@
+{
+    "name": "gustavosantarosa/laravel-tool-pack",
+    "license": "MIT",
+    "homepage":"http://www.gustavosantarosa.esy.es/",
+    "description": "tool packs to complement the laravel",
+    "require": {
+        "php":"^7.2|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "GustavoSantarosa\\LaravelToolPack\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Luis Gustavo Santarosa",
+            "email": "gustavo.santarosa@qyon.com",
+            "role": "Developer"
+        }        
+    ],
+    "support": {
+        "email": "gustavo.santarosa@qyon.com"
+    },
+    "minimum-stability": "dev",
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Qyon\\ServiceLayer\\Provider\\QyonServiceProvider"				
+            ]
+        }
+    }
+}
