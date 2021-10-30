@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Qyon\ServiceLayer\ReturnPrepare;
+use GustavoSantarosa\LaravelToolPack\ReturnPrepare;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use App\Services\ServiceInterface;

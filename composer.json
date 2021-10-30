@@ -4,7 +4,9 @@
     "homepage":"http://www.gustavosantarosa.esy.es/",
     "description": "tool packs to complement the laravel",
     "require": {
-        "php":"^7.2|^8.0"
+        "php":"^7.2|^8.0",
+        "laravel/framework": "9999999-dev",
+        "spatie/laravel-query-builder": "9999999-dev"
     },
     "autoload": {
         "psr-4": {
