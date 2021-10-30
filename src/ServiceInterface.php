@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace GustavoSantarosa\LaravelToolPack;
 
 use GustavoSantarosa\LaravelToolPack\DataTransferObject;
 

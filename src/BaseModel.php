@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace GustavoSantarosa\LaravelToolPack;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;

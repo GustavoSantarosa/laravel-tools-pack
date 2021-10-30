@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace GustavoSantarosa\LaravelToolPack;
 
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
