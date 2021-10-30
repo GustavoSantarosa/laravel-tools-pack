@@ -27,7 +27,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Qyon\\ServiceLayer\\Provider\\QyonServiceProvider"				
+                "GustavoSantarosa\\LaravelToolPack\\Provider\\GustavoSantarosaLaravelToolPackProvider"				
             ]
         }
     }
