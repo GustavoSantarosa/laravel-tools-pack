@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Relations\HasManySyncable;
+use GustavoSantarosa\LaravelToolPack\HasManySyncable;
 use Illuminate\Database\Eloquent\Builder;
 
 class BaseModel extends Model
@@ -18,11 +18,9 @@ class BaseModel extends Model
      */
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
-        $instance = $this->newRelatedInstance($related);
-
+        $instance   = $this->newRelatedInstance($related);
         $foreignKey = $foreignKey ?: $this->getForeignKey();
-
-        $localKey = $localKey ?: $this->getKeyName();
+        $localKey   = $localKey ?: $this->getKeyName();
 
         return new HasManySyncable(
             $instance->newQuery(),
@@ -46,7 +44,7 @@ class BaseModel extends Model
             if (is_array($value)) {
                 $this->arrayWhereOr($query, $value);
             } else {
-                $indice = $indice == "cpfcnpj" ? "translate({$indice}, '.,-/', '')" : $indice; //TODO Qyon Solução paliativa Temporaria
+                $indice = $indice == "cpfcnpj" ? "translate({$indice}, '.,-/', '')" : $indice;
                 $query->orWhereRaw("UPPER(unaccent({$indice}::text)) like UPPER(unaccent('%{$value}%'))");
             }
         }
@@ -67,7 +65,7 @@ class BaseModel extends Model
             if (is_array($value)) {
                 $this->arrayWhere($query, $value);
             } else {
-                $indice = $indice == "cpfcnpj" ? "translate({$indice}, '.,-/', '')" : $indice; //TODO Qyon Solução paliativa Temporaria
+                $indice = $indice == "cpfcnpj" ? "translate({$indice}, '.,-/', '')" : $indice;
                 $query->WhereRaw("UPPER(unaccent({$indice}::text)) like UPPER(unaccent('%{$value}%'))");
             }
         }
@@ -76,7 +74,8 @@ class BaseModel extends Model
 
     public function scopeBetween(Builder $query, $column, $start, $end): Builder
     {
-        return $query->where($column, ">=",Carbon::parse($start))
-                    ->where($column, "<=", Carbon::parse($end));
+        return $query
+            ->where($column, ">=", Carbon::parse($start))
+            ->where($column, "<=", Carbon::parse($end));
     }
 }

@@ -11,8 +11,6 @@ use Illuminate\Support\ServiceProvider;
  */
 class ReturnPrepare extends ServiceProvider
 {
-    private static $_forbidenNames = ['code', 'msg', 'data', 'success'];
-
     public static function getMessageDTO(DataTransferObject $dto, $http_code)
     {
         return self::getMessage($dto->getSuccess(), $dto->getInclude(), $dto->getIndex(), $dto->getMessage(), $http_code, null, $dto->getData(), $dto->getErrors());
@@ -21,10 +19,9 @@ class ReturnPrepare extends ServiceProvider
     private static function getMessage($success, $include = [], $index = false, $message, $code, $params = [], $data = [], $errors = null)
     {
         $retArr = array(
-            "success" => $success,
-            "code" => $code,
-            "msg" => $message,
-            "message" => $message,
+            "success"   => $success,
+            "code"      => $code,
+            "message"   => $message,
         );
 
         if (!is_null($include)) {
@@ -40,23 +37,8 @@ class ReturnPrepare extends ServiceProvider
         if ($index) {
             return array_merge($retArr, $data);
         }
-
-        if (isset($data[0]) && count($data) > 1) {
-
-            $retArr = array_merge($retArr, [
-                "totalindata" => count($data),
-            ]);
-        }
         
         $retArr['data'] = $data;
-        
-        if (is_array($params)) {
-            foreach ($params as $name => $value) {
-                if (!in_array($value, self::$_forbidenNames)) {
-                    $retArr[] = $value;
-                }
-            }
-        }
 
         if (empty($retArr["data"])) {
             unset($retArr["data"]); 
@@ -89,21 +71,5 @@ class ReturnPrepare extends ServiceProvider
             $params,
             $data
         );
-    }
-
-    public static function makeMessage($success, $message, $code, $data = null)
-    {
-        $retArr = array(
-            "success" => $success,
-            "code" => $code,
-            "msg" => $message,
-            "message" => $message,
-        );
-
-        if (isset($data)) {
-            $retArr['data'] = $data;
-        }
-
-        return (object) $retArr;
     }
 }

@@ -2,6 +2,7 @@
 
 namespace GustavoSantarosa\LaravelToolPack;
 
+use App\Services\ServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
