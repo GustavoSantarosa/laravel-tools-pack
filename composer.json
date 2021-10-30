@@ -5,8 +5,8 @@
     "description": "tool packs to complement the laravel",
     "require": {
         "php":"^7.2|^8.0",
-        "laravel/framework": "9999999-dev",
-        "spatie/laravel-query-builder": "9999999-dev"
+        "laravel/framework": "^8.0",
+        "spatie/laravel-query-builder": "^8.0"
     },
     "autoload": {
         "psr-4": {
