@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "af243c5a19d44b1b09d6c1eda6f3eedd",
+    "content-hash": "54304ad39e7a139a40052055f9b62e8c",
     "packages": [
         {
             "name": "brick/math",
@@ -1932,7 +1932,7 @@
         },
         {
             "name": "spatie/laravel-query-builder",
-            "version": "dev-main",
+            "version": "4.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-query-builder.git",
@@ -1958,7 +1958,6 @@
                 "orchestra/testbench": "^4.9|^5.8|^6.3",
                 "phpunit/phpunit": "^9.0"
             },
-            "default-branch": true,
             "type": "library",
             "extra": {
                 "laravel": {
@@ -4631,10 +4630,7 @@
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {
-        "laravel/framework": 20,
-        "spatie/laravel-query-builder": 20
-    },
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
