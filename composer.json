@@ -6,7 +6,7 @@
     "require": {
         "php":"^7.2|^8.0",
         "laravel/framework": "^8.0",
-        "spatie/laravel-query-builder": "^8.0"
+        "spatie/laravel-query-builder": "^4.0.1"
     },
     "autoload": {
         "psr-4": {
