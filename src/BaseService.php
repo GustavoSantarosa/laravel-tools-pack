@@ -2,10 +2,11 @@
 
 namespace GustavoSantarosa\LaravelToolPack;
 
-use App\Services\ServiceInterface;
 use Illuminate\Support\Facades\DB;
 use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
+use GustavoSantarosa\LaravelToolPack\DatabaseTrait;
+use GustavoSantarosa\LaravelToolPack\ServiceInterface;
 use GustavoSantarosa\LaravelToolPack\DataTransferObject;
 
 
@@ -15,51 +16,51 @@ use GustavoSantarosa\LaravelToolPack\DataTransferObject;
  */
 class BaseService implements ServiceInterface
 {
-    /**
-     * Data Transfer Object
-     *
-     * @var DataTransferObject
-     */
-    protected $dto;
+    use DatabaseTrait;
 
-    public function __construct()
+    public function index($request, object $model): DataTransferObject
     {
-        $this->dto = new DataTransferObject();
-    }
+        $collumns = $this->getColumnListing($model->getTable());
 
-    public function index($request, $model)
-    {
         $callback = QueryBuilder::for($model)
-            ->allowedFields($model::$allowedFields)
+            ->allowedFields($collumns)
             ->allowedIncludes($model::$allowedIncludes)
+            ->allowedSorts($collumns)
             ->allowedFilters([
                 AllowedFilter::scope('between'),
+                AllowedFilter::scope('date'),
             ])
-            ->where(function ($query) use ($request, $model) {
-                if (isset($request->where)) {
-                    $model->arrayWhere($query, $request->where);
+            ->where(
+                function ($query) use ($request, $model) {
+                    if (isset($request->where)) {
+                        $model->arrayWhere($query, $request->where);
+                    }
+                    return $query;
                 }
-                return $query;
-            })
-            ->orWhere(function ($query) use ($request, $model) {
-                if (isset($request->orwhere)) {
-                    $model->arrayWhereOr($query, $request->orwhere);
-                }
+            )
+            ->where(
+                function ($query) use ($request, $model) {
+                    if (isset($request->orwhere)) {
+                        $model->arrayWhereOr($query, $request->orwhere);
+                    }
 
-                return $query;
-            })
+                    return $query;
+                }
+            )
             ->paginate($request->per_page)
             ->toarray();
 
-        $this->dto->setSuccess(true);
-        $this->dto->setIndex(true);
-        $this->dto->setMessage("{$model::$title} listado com sucesso!");
-        $this->dto->setInclude($model::$allowedIncludes);
-        $this->dto->setData($callback);
-        return $this->dto;
+        $indexDto = new DataTransferObject();
+
+        $indexDto->setSuccess(true);
+        $indexDto->setIndex(true);
+        $indexDto->setMessage("{$model::$title} listado com sucesso!");
+        $indexDto->setInclude($model::$allowedIncludes);
+        $indexDto->setData($callback);
+        return $indexDto;
     }
 
-    public function store($request, $model)
+    public function store($request, object $model): DataTransferObject
     {
         DB::connection('pgsql_erp')->beginTransaction();
 
@@ -71,78 +72,82 @@ class BaseService implements ServiceInterface
             }
         }
 
-        $this->show($callback->id, $model);
+        $storeDto = $this->show($callback->id, $model);
 
         DB::connection('pgsql_erp')->commit();
 
-        $this->dto->setSuccess(true);
-        $this->dto->setMessage("{$model::$title} de id '{$this->dto->getData()->id}' inserido com sucesso!");
-        return $this->dto;
+        $storeDto->successMessage("{$model::$title} de id '{$storeDto->getData()->id}' inserido com sucesso!");
+        return $storeDto;
     }
 
-    public function show($id, $model)
+    public function show(int $id, object $model): DataTransferObject
     {
+        $showDto = new DataTransferObject();
+
         $callback = QueryBuilder::for($model)
             ->allowedFields($model::$allowedFields)
             ->allowedIncludes($model::$allowedIncludes)
             ->find($id);
 
         if (!isset($callback)) {
-            $this->dto->setSuccess(false);
-            $this->dto->setMessage("{$model::$title} de id '{$id}' não encontrado!");
-            return $this->dto;
+            $showDto->errorMessage("{$model::$title} de id '{$id}' não encontrado!");
+            return $showDto;
         }
-        $this->dto->setSuccess(true);
-        $this->dto->setMessage("{$model::$title} de id '{$id}' encontrado!");
-        $this->dto->setInclude($model::$allowedIncludes);
-        $this->dto->setData($callback);
 
-        return $this->dto;
+        $showDto->successMessage("{$model::$title} de id '{$id}' não encontrado!", $callback, $model::$allowedIncludes);
+        return $showDto;
     }
 
-    public function update($request, $id, $model)
+    public function update($request, int $id, object $model): DataTransferObject
     {
-        $this->show($id, $model);
+        $updateDto = $this->show($id, $model);
 
-        if (!$this->dto->getSuccess()) {
-            return $this->dto;
+        if (!$updateDto->getSuccess()) {
+            return $updateDto;
         }
 
         DB::connection('pgsql_erp')->beginTransaction();
 
-        $this->dto->getData()->update($request);
+        $updateDto->getData()->update($request);
 
         foreach ($request as $indice => $value) {
             if (is_array($value)) {
-                $this->dto->getData()->$indice()->sync($value);
+                $updateDto->getData()->$indice()->sync($value);
             }
         }
 
-        $this->show($id, $model);
+        $updateDto = $this->show($id, $model);
 
         DB::connection('pgsql_erp')->commit();
 
-        $this->dto->setSuccess(true);
-        $this->dto->setMessage("{$model::$title} de id '{$id}' alterado com sucesso!");
-        return $this->dto;
+        $updateDto->successMessage("{$model::$title} de id '{$id}' alterado com sucesso!");
+        return $updateDto;
     }
 
-    public function destroy($id, $model)
+    public function destroy($id, $model): DataTransferObject
     {
-        $this->show($id, $model);
 
-        if (!$this->dto->getSuccess()) {
-            return $this->dto;
+        $destroyDto = $this->show($id, $model);
+
+        if (!$destroyDto->getSuccess()) {
+            return $destroyDto;
         }
 
         DB::connection('pgsql_erp')->beginTransaction();
 
-        $this->dto->getData()->destroy($id);
+        $destroyDto->getData()->destroy($id);
 
         DB::connection('pgsql_erp')->commit();
 
-        $this->dto->setSuccess(true);
-        $this->dto->setMessage("{$model::$title} de id '{$id}' excluido com sucesso!");
-        return $this->dto;
+        $destroyDto->successMessage("{$model::$title} de id '{$id}' excluido com sucesso!");
+        return $destroyDto;
+    }
+
+    public function status(object $model): DataTransferObject
+    {
+        $statusDto = new DataTransferObject();
+
+        $statusDto->successMessage("Status da tabela {$model::$title} localizado com sucesso!");
+        return $statusDto;
     }
 }
