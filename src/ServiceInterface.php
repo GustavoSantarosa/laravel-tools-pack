@@ -1,54 +1,90 @@
 <?php
 
+/**
+ * Service Interface
+ * php version 7.4.16
+ *
+ * @category Interface
+ * @package  GustavoSantarosa\LaravelToolPack
+ * @author   Luis Gustavo Santarosa Pinto <bolota_xd@hotmail.com>
+ * @license  http://www.gnu.org/licenses/old-lic GNU
+ * @link     https://github.com/GustavoSantarosa
+ */
+
 namespace GustavoSantarosa\LaravelToolPack;
 
 use GustavoSantarosa\LaravelToolPack\DataTransferObject;
 
 /**
- * ServiceInterface Interface para as classes de serviço
+ * Interface Service
  *
+ * @category ServiceInterface
+ * @package  GustavoSantarosa\LaravelToolPack
+ * @author   Luis Gustavo Santarosa Pinto <bolota_xd@hotmail.com>
+ * @license  http://www.gnu.org/licenses/old-lic GNU
+ * @link     https://github.com/GustavoSantarosa
  */
 interface ServiceInterface
 {
-        
+
     /**
-     * index
+     * Index
+     *
+     * @param $request Requisicao da rota
+     * @param $model   Model Principal
      *
      * @return DataTransferObject
      */
-    public function index($request, $model);
-        
-        
+    public function index($request, object $model): DataTransferObject;
+
+
     /**
-     * store
+     * Store
      *
-     * @param  mixed $request
+     * @param $request Requisicao da rota
+     * @param $model   Model Principal
+     *
      * @return DataTransferObject
      */
-    public function store($request, $model);
-    
+    public function store($request, object $model): DataTransferObject;
+
     /**
-     * show
+     * Show
      *
-     * @param  mixed $id
+     * @param $id    Identificador principal
+     * @param object $model Model Principal
+     *
      * @return DataTransferObject
      */
-    public function show($id, $model);
-    
+    public function show(int $id, object $model): DataTransferObject;
+
     /**
-     * update
+     * Update
      *
-     * @param  mixed $request
-     * @param  mixed $id
+     * @param $request Requisicao da rota
+     * @param $id      Identificador principal
+     * @param $model   Model Principal
+     *
      * @return DataTransferObject
      */
-    public function update($request, $id, $model);
-        
+    public function update($request, int $id, object $model): DataTransferObject;
+
     /**
-     * destroy
+     * Destroy
      *
-     * @param  mixed $id
+     * @param $id    Identificador principal
+     * @param $model Model Principal
+     *
      * @return DataTransferObject
      */
-    public function destroy($id, $model);
+    public function destroy(int $id, object $model): DataTransferObject;
+
+    /**
+     * Status
+     *
+     * @param $model Model Principal
+     *
+     * @return DataTransferObject
+     */
+    public function status(object $model): DataTransferObject;
 }

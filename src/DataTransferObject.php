@@ -7,59 +7,28 @@ use Illuminate\Support\ServiceProvider;
 /**
  * DataTransferObject Classe que serve para transferência de dados entre o Service e o Controller
  *
+ * @author Luis Gustavo Santarosa Pinto <bolota_xd@hotmail.com>
+ *
  */
 class DataTransferObject extends ServiceProvider
-{    
-    /**
-     * success
-     *
-     * @var bool
-     */
-    private $success;
-
-    /**
-     * include
-     *
-     * @var array
-     */
-    private $include;
-
-    /**
-     * index
-     *
-     * @var bool
-     */
-    private $index;
-
-    /**
-     * message
-     *
-     * @var string
-     */
-    private $message;
-    
-    /**
-     * data
-     *
-     * @var mixed
-     */
+{
+    private bool    $success;
+    private array   $include;
+    private bool    $index;
+    private string  $message;
     private $data;
-
-    /**
-     * errors
-     *
-     * @var mixed
-     */
-    private $errors;
+    private int     $internalCode;
+    private int     $httpCode;
 
     public function __construct()
     {
-        $this->success = false;
-        $this->include = [];
-        $this->index = false;
-        $this->message = "";
-        $this->data = null;
-        $this->errors = null;
+        $this->success      = true;
+        $this->include      = [];
+        $this->index        = false;
+        $this->message      = "";
+        $this->data         = [];
+        $this->internalCode = 2000;
+        $this->httpCode     = 201;
     }
 
     /**
@@ -94,7 +63,7 @@ class DataTransferObject extends ServiceProvider
     {
         $this->index = $value;
     }
-    
+
     /**
      * message
      *
@@ -105,7 +74,7 @@ class DataTransferObject extends ServiceProvider
     {
         $this->message = $value;
     }
-    
+
     /**
      * data
      *
@@ -117,17 +86,6 @@ class DataTransferObject extends ServiceProvider
         $this->data = $value;
     }
 
-    /**
-     * errors
-     *
-     * @param  mixed $value
-     * @return void
-     */
-    public function setErrors($value)
-    {
-        $this->errors = $value;
-    }    
-    
     /**
      * success
      *
@@ -141,7 +99,7 @@ class DataTransferObject extends ServiceProvider
     /**
      * include
      *
-     * @return bool
+     * @return array
      */
     public function getInclude()
     {
@@ -157,7 +115,7 @@ class DataTransferObject extends ServiceProvider
     {
         return $this->index;
     }
-    
+
     /**
      * message
      *
@@ -166,27 +124,57 @@ class DataTransferObject extends ServiceProvider
     public function getMessage()
     {
         return $this->message;
-    }    
+    }
 
-     /**
+    /**
      * data
      *
-     * @return mixed $value
+     * @return $value
      */
     public function getData()
     {
         return $this->data;
-    }        
+    }
 
-     /**
-     * errors
+    /**
+     * internalCode
      *
-     * @return mixed $value
+     * @return mixed
      */
-    public function getErrors()
+    public function getInternalCode()
     {
-        return $this->errors;
-    }            
+        return $this->internalCode;
+    }
+    /**
+     * internalCode
+     *
+     * @param  mixed $code
+     * @return void
+     */
+    public function setInternalCode($code)
+    {
+        $this->internalCode = $code;
+    }
+
+    /**
+     * HttpCode
+     *
+     * @return mixed
+     */
+    public function getHttpCode()
+    {
+        return $this->httpCode;
+    }
+    /**
+     * HttpCode
+     *
+     * @param  mixed $code
+     * @return void
+     */
+    public function setHttpCode($code)
+    {
+        $this->httpCode = $code;
+    }
 
     /**
      * successMessage
@@ -195,24 +183,68 @@ class DataTransferObject extends ServiceProvider
      * @param  mixed $data
      * @return void
      */
-    public function successMessage($message,$data = null){
-        $this->setSuccess(true);
-        $this->setMessage($message); 
+    public function successMessage($message, $data = null, $include = null)
+    {
+        $this->setMessage($message);
         $this->setData($data);
+        $this->setInclude($include);
     }
 
     /**
-     * errorMessage
+     * ErrorMessage function
      *
-     * @param  string $message
-     * @param  mixed $data
-     * @param  mixed $error
+     * @param string $message
+     * @param $data
+     * @param integer $internalCode
+     *
+     * @return self
+     */
+    public function errorMessage(string $message, $data = null, int $internalCode = 9000, $httpCode = 500): self
+    {
+        $this->setSuccess(false);
+        $this->setMessage($message);
+        $this->setInternalCode($internalCode);
+        $this->setData($data);
+        $this->setHttpCode($httpCode);
+
+        return $this;
+    }
+
+    /**
+     * GetMessageDTO function
+     *
      * @return void
      */
-    public function errorMessage($message,$data = null,$errors=null){
-        $this->setSuccess(false);
-        $this->setMessage($message); 
-        $this->setData($data);
-        $this->setErrors($errors);
+    public function getMessageDTO()
+    {
+        $callback = [
+            "success"      => $this->getSuccess(),
+            "internalCode" => $this->getInternalCode(),
+            "message"      => $this->getMessage(),
+        ];
+
+        if (count($this->getInclude()) > 0) {
+            $callback = array_merge($callback, ["include" => $this->getInclude()]);
+        }
+
+        if (in_array(gettype($this->getData()), ["array"]) && count((array) $this->getData()) > 0) {
+            $callback = array_merge($callback, [
+                "data" => $this->getData()
+            ]);
+        }
+
+        if (in_array(gettype($this->getData()), ["object"]) && !is_null($this->getData())) {
+            $callback = array_merge($callback, [
+                "data" => $this->getData()->toArray()
+            ]);
+        }
+
+        if (in_array(gettype($this->getData()), ["string", "numeric", "integer"]) && !empty($this->getData())) {
+            $callback = array_merge($callback, [
+                "data" => $this->getData()
+            ]);
+        }
+
+        return response()->json($callback, $this->getHttpCode());
     }
 }
