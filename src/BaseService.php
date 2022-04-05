@@ -5,6 +5,7 @@ namespace GustavoSantarosa\LaravelToolPack;
 use Illuminate\Support\Facades\DB;
 use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
+use Illuminate\Support\Facades\Validator;
 use GustavoSantarosa\LaravelToolPack\DatabaseTrait;
 use GustavoSantarosa\LaravelToolPack\DataTransferObject;
 
@@ -22,10 +23,10 @@ class BaseService
     protected $model;
 
     public function __construct(
-        ?object $storeValidation = null,
-        ?object $updateValidation = null,
-        ?object $model = null,
-        ?array $data = []
+        ?array $data                = [],
+        ?object $model              = null,
+        ?object $storeValidation    = null,
+        ?object $updateValidation   = null
     ) {
         $this->storeValidation = $storeValidation;
         $this->updateValidation = $updateValidation;
@@ -96,23 +97,23 @@ class BaseService
                 AllowedFilter::scope('date'),
             ])
             ->where(
-                function ($query) use ($request) {
-                    if (isset($request->where)) {
-                        $this->model->arrayWhere($query, $request->where);
+                function ($query) {
+                    if (isset($this->data->where)) {
+                        $this->model->arrayWhere($query, $this->data->where);
                     }
                     return $query;
                 }
             )
             ->where(
-                function ($query) use ($request) {
-                    if (isset($request->orwhere)) {
-                        $this->model->arrayWhereOr($query, $request->orwhere);
+                function ($query) {
+                    if (isset($this->data->orwhere)) {
+                        $this->model->arrayWhereOr($query, $this->data->orwhere);
                     }
 
                     return $query;
                 }
             )
-            ->paginate($request->per_page)
+            ->paginate($this->data['per_page'])
             ->toarray();
 
         $indexDto = new DataTransferObject();
@@ -125,15 +126,15 @@ class BaseService
         return $indexDto;
     }
 
-    public function store($request): DataTransferObject
+    public function store(): DataTransferObject
     {
         $this->validate($this->data, 'store');
 
-        DB::connection('pgsql_erp')->beginTransaction();
+        DB::beginTransaction();
 
-        $callback = ($this->model)->create((array) $request);
+        $callback = ($this->model)->create($this->data);
 
-        foreach ($request as $indice => $value) {
+        foreach ($this->data as $indice => $value) {
             if (is_array($value)) {
                 $callback->$indice()->sync($value);
             }
@@ -141,7 +142,7 @@ class BaseService
 
         $storeDto = $this->show($callback->id, $this->model);
 
-        DB::connection('pgsql_erp')->commit();
+        DB::commit();
 
         $storeDto->successMessage("Successfully created!");
         return $storeDto;

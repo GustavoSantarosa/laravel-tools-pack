@@ -40,17 +40,21 @@ class DataTransferObject extends ServiceProvider
     public function setSuccess($value)
     {
         $this->success = $value;
+
+        return $this;
     }
 
     /**
-     * setInclude
+     * setInclude function
      *
-     * @param  array $value
-     * @return void
+     * @param array|null $value
+     * @return DataTransferObject
      */
-    public function setInclude($value)
+    public function setInclude(array $value): DataTransferObject
     {
         $this->include = $value;
+
+        return $this;
     }
 
     /**
@@ -62,6 +66,8 @@ class DataTransferObject extends ServiceProvider
     public function setIndex($value)
     {
         $this->index = $value;
+
+        return $this;
     }
 
     /**
@@ -73,6 +79,8 @@ class DataTransferObject extends ServiceProvider
     public function setMessage($value)
     {
         $this->message = $value;
+
+        return $this;
     }
 
     /**
@@ -84,6 +92,8 @@ class DataTransferObject extends ServiceProvider
     public function setData($value)
     {
         $this->data = $value;
+
+        return $this;
     }
 
     /**
@@ -154,6 +164,8 @@ class DataTransferObject extends ServiceProvider
     public function setInternalCode($code)
     {
         $this->internalCode = $code;
+
+        return $this;
     }
 
     /**
@@ -174,6 +186,8 @@ class DataTransferObject extends ServiceProvider
     public function setHttpCode($code)
     {
         $this->httpCode = $code;
+
+        return $this;
     }
 
     /**
@@ -183,11 +197,13 @@ class DataTransferObject extends ServiceProvider
      * @param  mixed $data
      * @return void
      */
-    public function successMessage($message, $data = null, $include = null)
+    public function successMessage($message, $data = null, $include = [])
     {
         $this->setMessage($message);
         $this->setData($data);
         $this->setInclude($include);
+
+        return $this;
     }
 
     /**

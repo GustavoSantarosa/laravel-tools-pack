@@ -58,6 +58,8 @@ trait DatabaseTrait
             ->select('column_name')
             ->whereRaw("concat(table_schema,'.',table_name) = '{$tableName}' ")
             ->get();
+            
+        $columns = [];
         foreach ($callback as $row) {
             $columns[] = $row->column_name;
         }
