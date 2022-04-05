@@ -7,12 +7,13 @@ use Illuminate\Routing\Controller;
 use GustavoSantarosa\LaravelToolPack\ReturnPrepare;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use App\Services\ServiceInterface;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class BaseController extends Controller
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    use AuthorizesRequests;
+    use DispatchesJobs;
+    use ValidatesRequests;
 
     /**
      * service
@@ -22,10 +23,14 @@ class BaseController extends Controller
     protected $service;
     protected $model;
 
-    public function __construct(ServiceInterface $service, $model)
-    {
-        $this->service = $service;
-        $this->model = $model;
+    public function __construct(
+        Request $request,
+        $service,
+        $model
+    ) {
+        $this->data     = $request->all();
+        $this->service  = $service;
+        $this->model    = $model;
     }
 
     /**
@@ -33,13 +38,30 @@ class BaseController extends Controller
      *
      * @return ReturnPrepare
      */
-    public function index(Request $request)
+    public function index()
     {
-        if (!isset($request->per_page)) {
-            $request->per_page = 50;
-        }
+        return $this->service->index()->getMessageDTO();
+    }
 
-        return ReturnPrepare::getMessageDTO($this->service->index($request, $this->model), 200);
+    /**
+     * Store the specified resource from storage.
+     *
+     * @param  Request $request
+     */
+    public function store()
+    {
+        return $this->service->store()->getMessageDTO();
+    }
+
+    /**
+     * Atualizar
+     *
+     * @param  mixed $request
+     * @param  mixed $id
+     */
+    public function update($id)
+    {
+        return $this->service->update($id)->getMessageDTO();
     }
 
     /**
@@ -50,7 +72,7 @@ class BaseController extends Controller
      */
     public function show($id)
     {
-        return ReturnPrepare::getMessageDTO($this->service->show($id, $this->model), 200);
+        return $this->service->show($id)->getMessageDTO();
     }
 
     /**
@@ -61,6 +83,6 @@ class BaseController extends Controller
      */
     public function destroy($id)
     {
-        return ReturnPrepare::getMessageDTO($this->service->destroy($id, $this->model), 200);
+        return $this->service->destroy($id)->getMessageDTO();
     }
 }
