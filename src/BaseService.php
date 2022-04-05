@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\DB;
 use Spatie\QueryBuilder\QueryBuilder;
 use Spatie\QueryBuilder\AllowedFilter;
 use GustavoSantarosa\LaravelToolPack\DatabaseTrait;
-use GustavoSantarosa\LaravelToolPack\ServiceInterface;
 use GustavoSantarosa\LaravelToolPack\DataTransferObject;
 
 
@@ -14,34 +13,100 @@ use GustavoSantarosa\LaravelToolPack\DataTransferObject;
  * BaseService Classe base para as classes de serviço
  *
  */
-class BaseService implements ServiceInterface
+class BaseService
 {
     use DatabaseTrait;
 
-    public function index($request, object $model): DataTransferObject
-    {
-        $collumns = $this->getColumnListing($model->getTable());
+    protected $storeValidation;
+    protected $updateValidation;
+    protected $model;
 
-        $callback = QueryBuilder::for($model)
+    public function __construct(
+        ?object $storeValidation = null,
+        ?object $updateValidation = null,
+        ?object $model = null,
+        ?array $data = []
+    ) {
+        $this->storeValidation = $storeValidation;
+        $this->updateValidation = $updateValidation;
+        $this->model = $model;
+        $this->data  = $data;
+    }
+
+    /**
+     * Valida os dados
+     *
+     * @param [Array] $data
+     * @param string $caller Upper Case Http method
+     * @return void
+     */
+    public function validate(
+        $data,
+        $caller = null,
+        $currentId = null,
+        $customValidation = null
+    ) {
+        if ($customValidation) {
+            $validation = $customValidation;
+        } else {
+            switch ($caller) {
+                case 'store':
+                    $validation = $this->storeValidation;
+                    break;
+                case 'update':
+                    $validation = $this->updateValidation;
+                    break;
+                default:
+                    return;
+            }
+        }
+
+        if (!$validation) {
+            return;
+        }
+
+        //Checks if the validate method have a ID param and, if necessary, sends it
+        $method = new \ReflectionMethod(get_class($validation), 'rules');
+        $methodParams = $method->getParameters();
+
+        // TODO Qyon: $validation->authorize();
+
+        if ((count($methodParams) == 1 && $methodParams[0]->name == 'id')) {
+            Validator::validate($data, $validation->rules($currentId), $validation->messages());
+        } else {
+            Validator::validate($data, $validation->rules(), $validation->messages());
+        }
+    }
+
+
+    public function index(): DataTransferObject
+    {
+        if (!isset($this->data['per_page'])) {
+            $this->data['per_page'] = 50;
+        }
+
+        $collumns = $this->getColumnListing($this->model->getTable());
+
+        $callback = QueryBuilder::for($this->model)
             ->allowedFields($collumns)
-            ->allowedIncludes($model::$allowedIncludes)
+            ->allowedIncludes($this->model::$allowedIncludes)
             ->allowedSorts($collumns)
             ->allowedFilters([
                 AllowedFilter::scope('between'),
                 AllowedFilter::scope('date'),
             ])
             ->where(
-                function ($query) use ($request, $model) {
+                function ($query) use ($request) {
                     if (isset($request->where)) {
-                        $model->arrayWhere($query, $request->where);
+                        $this->model->arrayWhere($query, $request->where);
                     }
                     return $query;
                 }
             )
             ->where(
-                function ($query) use ($request, $model) {
+                function ($query) use ($request) {
                     if (isset($request->orwhere)) {
-                        $model->arrayWhereOr($query, $request->orwhere);
+                        $this->model->arrayWhereOr($query, $request->orwhere);
                     }
 
                     return $query;
@@ -54,17 +119,19 @@ class BaseService implements ServiceInterface
 
         $indexDto->setSuccess(true);
         $indexDto->setIndex(true);
-        $indexDto->setMessage("{$model::$title} listado com sucesso!");
-        $indexDto->setInclude($model::$allowedIncludes);
+        $indexDto->setMessage("Successfully found!");
+        $indexDto->setInclude($this->model::$allowedIncludes);
         $indexDto->setData($callback);
         return $indexDto;
     }
 
-    public function store($request, object $model): DataTransferObject
+    public function store($request): DataTransferObject
     {
+        $this->validate($this->data, 'store');
+
         DB::connection('pgsql_erp')->beginTransaction();
 
-        $callback = ($model)->create((array) $request);
+        $callback = ($this->model)->create((array) $request);
 
         foreach ($request as $indice => $value) {
             if (is_array($value)) {
@@ -72,35 +139,37 @@ class BaseService implements ServiceInterface
             }
         }
 
-        $storeDto = $this->show($callback->id, $model);
+        $storeDto = $this->show($callback->id, $this->model);
 
         DB::connection('pgsql_erp')->commit();
 
-        $storeDto->successMessage("{$model::$title} de id '{$storeDto->getData()->id}' inserido com sucesso!");
+        $storeDto->successMessage("Successfully created!");
         return $storeDto;
     }
 
-    public function show(int $id, object $model): DataTransferObject
+    public function show(int $id): DataTransferObject
     {
         $showDto = new DataTransferObject();
 
-        $callback = QueryBuilder::for($model)
-            ->allowedFields($model::$allowedFields)
-            ->allowedIncludes($model::$allowedIncludes)
+        $callback = QueryBuilder::for($this->model)
+            ->allowedFields($this->model::$allowedFields)
+            ->allowedIncludes($this->model::$allowedIncludes)
             ->find($id);
 
         if (!isset($callback)) {
-            $showDto->errorMessage("{$model::$title} de id '{$id}' não encontrado!");
+            $showDto->errorMessage("{$this->model::$title} de id '{$id}' não encontrado!");
             return $showDto;
         }
 
-        $showDto->successMessage("{$model::$title} de id '{$id}' não encontrado!", $callback, $model::$allowedIncludes);
+        $showDto->successMessage("Successfully found!", $callback, $this->model::$allowedIncludes);
         return $showDto;
     }
 
-    public function update($request, int $id, object $model): DataTransferObject
+    public function update($request, int $id): DataTransferObject
     {
-        $updateDto = $this->show($id, $model);
+        $this->validate($this->data, 'update', $id);
+
+        $updateDto = $this->show($id, $this->model);
 
         if (!$updateDto->getSuccess()) {
             return $updateDto;
@@ -116,18 +185,18 @@ class BaseService implements ServiceInterface
             }
         }
 
-        $updateDto = $this->show($id, $model);
+        $updateDto = $this->show($id, $this->model);
 
         DB::connection('pgsql_erp')->commit();
 
-        $updateDto->successMessage("{$model::$title} de id '{$id}' alterado com sucesso!");
+        $updateDto->successMessage("Successfully updated!");
         return $updateDto;
     }
 
-    public function destroy($id, $model): DataTransferObject
+    public function destroy($id): DataTransferObject
     {
 
-        $destroyDto = $this->show($id, $model);
+        $destroyDto = $this->show($id, $this->model);
 
         if (!$destroyDto->getSuccess()) {
             return $destroyDto;
@@ -139,15 +208,15 @@ class BaseService implements ServiceInterface
 
         DB::connection('pgsql_erp')->commit();
 
-        $destroyDto->successMessage("{$model::$title} de id '{$id}' excluido com sucesso!");
+        $destroyDto->successMessage("Successfully deleted!");
         return $destroyDto;
     }
 
-    public function status(object $model): DataTransferObject
+    public function status(): DataTransferObject
     {
         $statusDto = new DataTransferObject();
 
-        $statusDto->successMessage("Status da tabela {$model::$title} localizado com sucesso!");
+        $statusDto->successMessage("Successfully found!");
         return $statusDto;
     }
 }
