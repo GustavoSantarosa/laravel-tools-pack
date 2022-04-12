@@ -15,20 +15,15 @@ class BaseController extends Controller
     use DispatchesJobs;
     use ValidatesRequests;
 
-    /**
-     * service
-     *
-     * @var ServiceInterface
-     */
     protected $service;
     protected $model;
 
     public function __construct(
-        Request $request,
+        $data,
         $service,
         $model
     ) {
-        $this->data     = $request->all();
+        $this->data     = $data;
         $this->service  = $service;
         $this->model    = $model;
     }
@@ -40,7 +35,10 @@ class BaseController extends Controller
      */
     public function index()
     {
-        return $this->service->index()->getMessageDTO();
+        return $this
+            ->service
+            ->index()
+            ->getMessageDTO();
     }
 
     /**
@@ -50,7 +48,10 @@ class BaseController extends Controller
      */
     public function store()
     {
-        return $this->service->store()->getMessageDTO();
+        return $this
+            ->service
+            ->store()
+            ->getMessageDTO();
     }
 
     /**
@@ -61,7 +62,10 @@ class BaseController extends Controller
      */
     public function update($id)
     {
-        return $this->service->update($id)->getMessageDTO();
+        return $this
+            ->service
+            ->update($id)
+            ->getMessageDTO();
     }
 
     /**
@@ -72,7 +76,10 @@ class BaseController extends Controller
      */
     public function show($id)
     {
-        return $this->service->show($id)->getMessageDTO();
+        return $this
+            ->service
+            ->show($id)
+            ->getMessageDTO();
     }
 
     /**
@@ -83,6 +90,9 @@ class BaseController extends Controller
      */
     public function destroy($id)
     {
-        return $this->service->destroy($id)->getMessageDTO();
+        return $this
+            ->service
+            ->destroy($id)
+            ->getMessageDTO();
     }
 }

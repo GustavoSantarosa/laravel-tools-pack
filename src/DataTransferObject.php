@@ -261,6 +261,10 @@ class DataTransferObject extends ServiceProvider
             ]);
         }
 
+        if ($this->index) {
+            $callback = array_merge($callback, $this->getData());
+        }
+
         return response()->json($callback, $this->getHttpCode());
     }
 }

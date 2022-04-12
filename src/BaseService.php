@@ -4,6 +4,7 @@ namespace GustavoSantarosa\LaravelToolPack;
 
 use Illuminate\Support\Facades\DB;
 use Spatie\QueryBuilder\QueryBuilder;
+use Illuminate\Support\Facades\Config;
 use Spatie\QueryBuilder\AllowedFilter;
 use Illuminate\Support\Facades\Validator;
 use GustavoSantarosa\LaravelToolPack\DatabaseTrait;
@@ -23,8 +24,8 @@ class BaseService
     protected $model;
 
     public function __construct(
-        ?array $data                = [],
-        ?object $model              = null,
+        array $data = [],
+        object $model,
         ?object $storeValidation    = null,
         ?object $updateValidation   = null
     ) {
@@ -118,11 +119,14 @@ class BaseService
 
         $indexDto = new DataTransferObject();
 
-        $indexDto->setSuccess(true);
+        $indexDto->successMessage(
+            "Successfully found!",
+            $callback,
+            $this->model::$allowedIncludes
+        );
+
         $indexDto->setIndex(true);
-        $indexDto->setMessage("Successfully found!");
-        $indexDto->setInclude($this->model::$allowedIncludes);
-        $indexDto->setData($callback);
+
         return $indexDto;
     }
 
@@ -162,7 +166,11 @@ class BaseService
             return $showDto;
         }
 
-        $showDto->successMessage("Successfully found!", $callback, $this->model::$allowedIncludes);
+        $showDto->successMessage(
+            "Successfully found!",
+            $callback,
+            $this->model::$allowedIncludes
+        );
         return $showDto;
     }
 
