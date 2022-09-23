@@ -24,6 +24,9 @@ use Illuminate\Database\Eloquent\Builder;
 
 class BaseModel extends Model
 {
+    public static $allowedFields    = [];
+    public static $allowedIncludes  = [];
+    
     /**
      * Por default no laravel não possui o sync para hasmany nas relações.
      * Entao ele foi modificado, para que ele retorne o syncable.
@@ -52,9 +55,9 @@ class BaseModel extends Model
      * Utilizado para quando o request vim com array com coluna repetida.
      * orWhere[][descricao]
      *
-     * @param Builder $query 
-     * @param array   $orWhere 
-     * 
+     * @param Builder $query
+     * @param array   $orWhere
+     *
      * @return Builder
      */
     public function arrayWhereOr(Builder $query, array $orWhere): Builder
@@ -78,9 +81,9 @@ class BaseModel extends Model
      * Utilizado para quando o request vim com array com coluna repetida.
      * Where[][descricao]
      *
-     * @param Builder $query 
-     * @param array   $where 
-     * 
+     * @param Builder $query
+     * @param array   $where
+     *
      * @return Builder
      */
     public function arrayWhere(Builder $query, array $where): Builder
@@ -103,11 +106,11 @@ class BaseModel extends Model
     /**
      * Escopo Global Between
      *
-     * @param Builder $query 
-     * @param $column 
-     * @param $start 
-     * @param $end   
-     * 
+     * @param Builder $query
+     * @param $column
+     * @param $start
+     * @param $end
+     *
      * @return Builder
      */
     public function scopeBetween(
@@ -119,15 +122,15 @@ class BaseModel extends Model
         return $query->where($column, ">=", Carbon::parse($start))
             ->where($column, "<=", Carbon::parse($end));
     }
-    
+
     /**
      * Escopo Global Date
      *
-     * @param Builder $query    
-     * @param string  $column   
-     * @param string  $date     
-     * @param string  $operator 
-     * 
+     * @param Builder $query
+     * @param string  $column
+     * @param string  $date
+     * @param string  $operator
+     *
      * @return Builder
      */
     public function scopeDate(
