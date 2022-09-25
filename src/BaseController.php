@@ -19,13 +19,9 @@ class BaseController extends Controller
     protected $model;
 
     public function __construct(
-        $data,
         $service,
-        $model
     ) {
-        $this->data     = $data;
         $this->service  = $service;
-        $this->model    = $model;
     }
 
     /**
