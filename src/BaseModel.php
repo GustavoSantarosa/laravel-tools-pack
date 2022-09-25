@@ -12,8 +12,9 @@ namespace GustavoSantarosa\LaravelToolPack;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
-use GustavoSantarosa\LaravelToolPack\HasManySyncable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use GustavoSantarosa\LaravelToolPack\HasManySyncable;
 
 /**
  * Model Base
@@ -140,5 +141,25 @@ class BaseModel extends Model
         string $operator = "="
     ): Builder {
         return $query->where($column, $operator, Carbon::parse($date));
+    }
+
+    /**
+     * Get the formated createdAt.
+     */
+    protected function createdAt(): Attribute
+    {
+        return new Attribute(
+            get: fn ($value) => Carbon::parse($value)->format('Y-m-d H:i'),
+        );
+    }
+
+    /**
+     * Get the formated updatedAt.
+     */
+    protected function updatedAt(): Attribute
+    {
+        return new Attribute(
+            get: fn ($value) => Carbon::parse($value)->format('Y-m-d H:i'),
+        );
     }
 }
