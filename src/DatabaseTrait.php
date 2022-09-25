@@ -51,7 +51,7 @@ trait DatabaseTrait
      */
     protected function getColumnListing(string $tableName, ?string $database = null): array
     {
-        $database = is_null($database) ?? Config::get("database.default");
+        $database = $database ?? Config::get("database.default");
 
         $callback = DB::connection($database)
             ->table("information_schema.columns")
