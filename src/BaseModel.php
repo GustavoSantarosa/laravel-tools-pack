@@ -27,7 +27,7 @@ class BaseModel extends Model
 {
     public static $allowedFields    = [];
     public static $allowedIncludes  = [];
-    
+
     /**
      * Por default no laravel não possui o sync para hasmany nas relações.
      * Entao ele foi modificado, para que ele retorne o syncable.
@@ -70,7 +70,7 @@ class BaseModel extends Model
                 $indice = $indice == "cpfcnpj" ?
                     "translate({$indice}, '.,-/', '')" : $indice;
                 $query->orWhereRaw(
-                    "UPPER(unaccent({$indice}::text)) 
+                    "UPPER(unaccent({$indice}::text))
                     like UPPER(unaccent('%{$value}%'))"
                 );
             }
@@ -96,7 +96,7 @@ class BaseModel extends Model
                 $indice = $indice == "cpfcnpj" ?
                     "translate({$indice}, '.,-/', '')" : $indice;
                 $query->WhereRaw(
-                    "UPPER(unaccent({$indice}::text)) 
+                    "UPPER(unaccent({$indice}::text))
                     like UPPER(unaccent('%{$value}%'))"
                 );
             }
