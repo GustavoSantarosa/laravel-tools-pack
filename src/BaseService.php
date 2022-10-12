@@ -99,16 +99,17 @@ class BaseService
             ])
             ->where(
                 function ($query) {
-                    if (isset($this->data->where)) {
-                        $this->model->arrayWhere($query, $this->data->where);
+
+                    if (isset($this->data["where"])) {
+                        $this->model->arrayWhere($query, $this->data["where"]);
                     }
                     return $query;
                 }
             )
-            ->where(
+            ->orwhere(
                 function ($query) {
-                    if (isset($this->data->orwhere)) {
-                        $this->model->arrayWhereOr($query, $this->data->orwhere);
+                    if (isset($this->data["orwhere"])) {
+                        $this->model->arrayWhereOr($query, $this->data["orwhere"]);
                     }
 
                     return $query;
@@ -159,6 +160,23 @@ class BaseService
         $callback = QueryBuilder::for($this->model)
             ->allowedFields($this->model::$allowedFields)
             ->allowedIncludes($this->model::$allowedIncludes)
+            ->where(
+                function ($query) {
+                    if (isset($this->data["where"])) {
+                        $this->model->arrayWhere($query, $this->data["where"]);
+                    }
+                    return $query;
+                }
+            )
+            ->orwhere(
+                function ($query) {
+                    if (isset($this->data["orwhere"])) {
+                        $this->model->arrayWhereOr($query, $this->data["orwhere"]);
+                    }
+
+                    return $query;
+                }
+            )
             ->find($id);
 
         if (!isset($callback)) {
