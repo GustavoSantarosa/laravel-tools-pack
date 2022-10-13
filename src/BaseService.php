@@ -3,17 +3,12 @@
 namespace GustavoSantarosa\LaravelToolPack;
 
 use Illuminate\Support\Facades\DB;
-use Spatie\QueryBuilder\QueryBuilder;
-use Illuminate\Support\Facades\Config;
-use Spatie\QueryBuilder\AllowedFilter;
 use Illuminate\Support\Facades\Validator;
-use GustavoSantarosa\LaravelToolPack\DatabaseTrait;
-use GustavoSantarosa\LaravelToolPack\DataTransferObject;
-
+use Spatie\QueryBuilder\AllowedFilter;
+use Spatie\QueryBuilder\QueryBuilder;
 
 /**
- * BaseService Classe base para as classes de serviço
- *
+ * BaseService Classe base para as classes de serviço.
  */
 class BaseService
 {
@@ -24,22 +19,23 @@ class BaseService
     protected $model;
 
     public function __construct(
-        array $data = [],
+        array $data,
         object $model,
-        ?object $storeValidation    = null,
-        ?object $updateValidation   = null
+        ?object $storeValidation = null,
+        ?object $updateValidation = null
     ) {
-        $this->storeValidation = $storeValidation;
+        $this->storeValidation  = $storeValidation;
         $this->updateValidation = $updateValidation;
-        $this->model = $model;
-        $this->data  = $data;
+        $this->model            = $model;
+        $this->data             = $data;
     }
 
     /**
-     * Valida os dados
+     * Valida os dados.
      *
      * @param [Array] $data
      * @param string $caller Upper Case Http method
+     *
      * @return void
      */
     public function validate(
@@ -67,19 +63,18 @@ class BaseService
             return;
         }
 
-        //Checks if the validate method have a ID param and, if necessary, sends it
-        $method = new \ReflectionMethod(get_class($validation), 'rules');
+        // Checks if the validate method have a ID param and, if necessary, sends it
+        $method       = new \ReflectionMethod(get_class($validation), 'rules');
         $methodParams = $method->getParameters();
 
         // TODO Qyon: $validation->authorize();
 
-        if ((count($methodParams) == 1 && $methodParams[0]->name == 'id')) {
+        if (1 == count($methodParams) && 'id' == $methodParams[0]->name) {
             Validator::validate($data, $validation->rules($currentId), $validation->messages());
         } else {
             Validator::validate($data, $validation->rules(), $validation->messages());
         }
     }
-
 
     public function index(): DataTransferObject
     {
@@ -99,17 +94,17 @@ class BaseService
             ])
             ->where(
                 function ($query) {
-
-                    if (isset($this->data["where"])) {
-                        $this->model->arrayWhere($query, $this->data["where"]);
+                    if (isset($this->data['where'])) {
+                        $this->model->arrayWhere($query, $this->data['where']);
                     }
+
                     return $query;
                 }
             )
             ->orwhere(
                 function ($query) {
-                    if (isset($this->data["orwhere"])) {
-                        $this->model->arrayWhereOr($query, $this->data["orwhere"]);
+                    if (isset($this->data['orwhere'])) {
+                        $this->model->arrayWhereOr($query, $this->data['orwhere']);
                     }
 
                     return $query;
@@ -121,7 +116,7 @@ class BaseService
         $indexDto = new DataTransferObject();
 
         $indexDto->successMessage(
-            "Successfully found!",
+            'Successfully found!',
             $callback,
             $this->model::$allowedIncludes
         );
@@ -137,7 +132,7 @@ class BaseService
 
         DB::beginTransaction();
 
-        $callback = ($this->model)->create($this->data);
+        $callback = $this->model->create($this->data);
 
         foreach ($this->data as $indice => $value) {
             if (is_array($value)) {
@@ -149,7 +144,8 @@ class BaseService
 
         DB::commit();
 
-        $storeDto->successMessage("Successfully created!");
+        $storeDto->setMessage('Successfully created!');
+
         return $storeDto;
     }
 
@@ -162,16 +158,17 @@ class BaseService
             ->allowedIncludes($this->model::$allowedIncludes)
             ->where(
                 function ($query) {
-                    if (isset($this->data["where"])) {
-                        $this->model->arrayWhere($query, $this->data["where"]);
+                    if (isset($this->data['where'])) {
+                        $this->model->arrayWhere($query, $this->data['where']);
                     }
+
                     return $query;
                 }
             )
             ->orwhere(
                 function ($query) {
-                    if (isset($this->data["orwhere"])) {
-                        $this->model->arrayWhereOr($query, $this->data["orwhere"]);
+                    if (isset($this->data['orwhere'])) {
+                        $this->model->arrayWhereOr($query, $this->data['orwhere']);
                     }
 
                     return $query;
@@ -181,14 +178,16 @@ class BaseService
 
         if (!isset($callback)) {
             $showDto->errorMessage("{$this->model::$title} de id '{$id}' não encontrado!");
+
             return $showDto;
         }
 
         $showDto->successMessage(
-            "Successfully found!",
+            'Successfully found!',
             $callback,
             $this->model::$allowedIncludes
         );
+
         return $showDto;
     }
 
@@ -216,13 +215,13 @@ class BaseService
 
         DB::connection('pgsql_erp')->commit();
 
-        $updateDto->successMessage("Successfully updated!");
+        $updateDto->successMessage('Successfully updated!');
+
         return $updateDto;
     }
 
     public function destroy($id): DataTransferObject
     {
-
         $destroyDto = $this->show($id, $this->model);
 
         if (!$destroyDto->getSuccess()) {
@@ -235,7 +234,8 @@ class BaseService
 
         DB::connection('pgsql_erp')->commit();
 
-        $destroyDto->successMessage("Successfully deleted!");
+        $destroyDto->successMessage('Successfully deleted!');
+
         return $destroyDto;
     }
 
@@ -243,7 +243,8 @@ class BaseService
     {
         $statusDto = new DataTransferObject();
 
-        $statusDto->successMessage("Successfully found!");
+        $statusDto->successMessage('Successfully found!');
+
         return $statusDto;
     }
 }
