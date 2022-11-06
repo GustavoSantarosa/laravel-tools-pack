@@ -109,7 +109,7 @@ class BaseModel extends Model
 
     /**
      * Utilizado para efetuar o array in.
-     * esperado: wherein[collum] = 1,2,3.
+     * esperado: wherenotin[collum] = 1,2,3.
      *
      * @throws Exception
      */
