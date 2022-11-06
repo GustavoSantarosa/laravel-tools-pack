@@ -2,39 +2,32 @@
 
 /**
  * Base Model
- * php version 7.4.16
+ * php version 7.4.16.
  *
  * @category Model
- * @package  GustavoSantarosa\LaravelToolPack
  */
 
 namespace GustavoSantarosa\LaravelToolPack;
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Model;
+use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
-use GustavoSantarosa\LaravelToolPack\HasManySyncable;
+use Illuminate\Database\Eloquent\Model;
 
 /**
- * Model Base
+ * Model Base.
  *
  * @category Model
- * @package  GustavoSantarosa\LaravelToolPack
  */
-
 class BaseModel extends Model
 {
-    public static $allowedFields    = [];
-    public static $allowedIncludes  = [];
+    public static $allowedFields   = [];
+    public static $allowedIncludes = [];
 
     /**
      * Por default no laravel não possui o sync para hasmany nas relações.
      * Entao ele foi modificado, para que ele retorne o syncable.
-     *
-     * @param $related
-     * @param $foreignKey
-     * @param $localKey
      *
      * @return HasManySyncable
      */
@@ -47,19 +40,14 @@ class BaseModel extends Model
         return new HasManySyncable(
             $instance->newQuery(),
             $this,
-            $instance->getTable() . '.' . $foreignKey,
+            $instance->getTable().'.'.$foreignKey,
             $localKey
         );
     }
 
     /**
      * Utilizado para quando o request vim com array com coluna repetida.
-     * orWhere[][descricao]
-     *
-     * @param Builder $query
-     * @param array   $orWhere
-     *
-     * @return Builder
+     * orWhere[][descricao].
      */
     public function arrayWhereOr(Builder $query, array $orWhere): Builder
     {
@@ -67,7 +55,7 @@ class BaseModel extends Model
             if (is_array($value)) {
                 $this->arrayWhereOr($query, $value);
             } else {
-                $indice = $indice == "cpfcnpj" ?
+                $indice = 'cpfcnpj' == $indice ?
                     "translate({$indice}, '.,-/', '')" : $indice;
                 $query->orWhereRaw(
                     "UPPER(unaccent({$indice}::text))
@@ -75,17 +63,13 @@ class BaseModel extends Model
                 );
             }
         }
+
         return $query;
     }
 
     /**
      * Utilizado para quando o request vim com array com coluna repetida.
-     * Where[][descricao]
-     *
-     * @param Builder $query
-     * @param array   $where
-     *
-     * @return Builder
+     * Where[][descricao].
      */
     public function arrayWhere(Builder $query, array $where): Builder
     {
@@ -93,7 +77,7 @@ class BaseModel extends Model
             if (is_array($value)) {
                 $this->arrayWhere($query, $value);
             } else {
-                $indice = $indice == "cpfcnpj" ?
+                $indice = 'cpfcnpj' == $indice ?
                     "translate({$indice}, '.,-/', '')" : $indice;
                 $query->WhereRaw(
                     "UPPER(unaccent({$indice}::text))
@@ -101,18 +85,30 @@ class BaseModel extends Model
                 );
             }
         }
+
         return $query;
     }
 
     /**
-     * Escopo Global Between
+     * Utilizado para efetuar o array in.
+     * esperado: wherein[collum] = 1,2,3.
      *
-     * @param Builder $query
-     * @param $column
-     * @param $start
-     * @param $end
-     *
-     * @return Builder
+     * @throws Exception
+     */
+    public function whereIn(Builder $query, array $where = [], array $allowedFields = []): Builder
+    {
+        foreach ($where as $column => $in) {
+            if (!in_array($column, $allowedFields)) {
+                throw new Exception("O indice '{$column}' não esta habilitado!", 1);
+            }
+            $query->whereIn($column, explode(',', $in));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Escopo Global Between.
      */
     public function scopeBetween(
         Builder $query,
@@ -120,25 +116,18 @@ class BaseModel extends Model
         $start,
         $end
     ): Builder {
-        return $query->where($column, ">=", Carbon::parse($start))
-            ->where($column, "<=", Carbon::parse($end));
+        return $query->where($column, '>=', Carbon::parse($start))
+            ->where($column, '<=', Carbon::parse($end));
     }
 
     /**
-     * Escopo Global Date
-     *
-     * @param Builder $query
-     * @param string  $column
-     * @param string  $date
-     * @param string  $operator
-     *
-     * @return Builder
+     * Escopo Global Date.
      */
     public function scopeDate(
         Builder $query,
         string $column,
         string $date,
-        string $operator = "="
+        string $operator = '='
     ): Builder {
         return $query->where($column, $operator, Carbon::parse($date));
     }
