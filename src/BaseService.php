@@ -110,13 +110,18 @@ class BaseService
                     return $query;
                 }
             )
+            ->when($this->data['wherein'] ?? null, function ($query) use ($collumns) {
+                return $this->model->whereIn($query, $this->data['wherein'], $collumns);
+            })
+            ->when($this->data['wherenotin'] ?? null, function ($query) use ($collumns) {
+                return $this->model->whereIn($query, $this->data['wherenotin'], $collumns);
+            })
             ->paginate($this->data['per_page'])
             ->toarray();
 
         $indexDto = new DataTransferObject();
-
         $indexDto->successMessage(
-            'Successfully found!',
+            __('messages.successfully.show'),
             $callback,
             $this->model::$allowedIncludes
         );
@@ -144,7 +149,7 @@ class BaseService
 
         DB::commit();
 
-        $storeDto->setMessage('Successfully created!');
+        $storeDto->setMessage(__('messages.successfully.created'));
 
         return $storeDto;
     }
@@ -177,13 +182,15 @@ class BaseService
             ->find($id);
 
         if (!isset($callback)) {
-            $showDto->errorMessage("{$this->model::$title} de id '{$id}' não encontrado!");
+            $showDto->errorMessage(__('messages.errors.notfound', [
+                'id' => $id,
+            ]));
 
             return $showDto;
         }
 
         $showDto->successMessage(
-            'Successfully found!',
+            __('messages.successfully.show'),
             $callback,
             $this->model::$allowedIncludes
         );
@@ -215,7 +222,7 @@ class BaseService
 
         DB::connection('pgsql_erp')->commit();
 
-        $updateDto->successMessage('Successfully updated!');
+        $updateDto->successMessage(__('messages.successfully.updated'));
 
         return $updateDto;
     }
@@ -234,7 +241,7 @@ class BaseService
 
         DB::connection('pgsql_erp')->commit();
 
-        $destroyDto->successMessage('Successfully deleted!');
+        $destroyDto->successMessage(__('messages.successfully.deleted'));
 
         return $destroyDto;
     }
@@ -243,7 +250,7 @@ class BaseService
     {
         $statusDto = new DataTransferObject();
 
-        $statusDto->successMessage('Successfully found!');
+        $statusDto->successMessage(__('messages.successfully.show'));
 
         return $statusDto;
     }
