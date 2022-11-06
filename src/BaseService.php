@@ -113,6 +113,9 @@ class BaseService
             ->when($this->data['wherein'] ?? null, function ($query) use ($collumns) {
                 return $this->model->whereIn($query, $this->data['wherein'], $collumns);
             })
+            ->when($this->data['wherenotin'] ?? null, function ($query) use ($collumns) {
+                return $this->model->whereIn($query, $this->data['wherenotin'], $collumns);
+            })
             ->paginate($this->data['per_page'])
             ->toarray();
 

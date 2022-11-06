@@ -108,6 +108,24 @@ class BaseModel extends Model
     }
 
     /**
+     * Utilizado para efetuar o array in.
+     * esperado: wherein[collum] = 1,2,3.
+     *
+     * @throws Exception
+     */
+    public function whereNotIn(Builder $query, array $where = [], array $allowedFields = []): Builder
+    {
+        foreach ($where as $column => $in) {
+            if (!in_array($column, $allowedFields)) {
+                throw new Exception("O indice '{$column}' não esta habilitado!", 1);
+            }
+            $query->whereNotIn($column, explode(',', $in));
+        }
+
+        return $query;
+    }
+
+    /**
      * Escopo Global Between.
      */
     public function scopeBetween(
