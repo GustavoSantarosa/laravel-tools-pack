@@ -2,6 +2,9 @@
 
 namespace GustavoSantarosa\LaravelToolPack;
 
+use GustavoSantarosa\LaravelToolPack\Traits\ApiResponse;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -13,10 +16,12 @@ use Spatie\QueryBuilder\QueryBuilder;
 class BaseService
 {
     use DatabaseTrait;
+    use ApiResponse;
 
     protected $storeValidation;
     protected $updateValidation;
-    protected $model;
+    public $model;
+    protected $data;
 
     public function __construct(
         array $data,
@@ -76,7 +81,7 @@ class BaseService
         }
     }
 
-    public function index(): DataTransferObject
+    public function index()
     {
         if (!isset($this->data['per_page'])) {
             $this->data['per_page'] = 50;
@@ -116,22 +121,12 @@ class BaseService
             ->when($this->data['wherenotin'] ?? null, function ($query) use ($collumns) {
                 return $this->model->whereIn($query, $this->data['wherenotin'], $collumns);
             })
-            ->paginate($this->data['per_page'])
-            ->toarray();
+            ->paginate($this->data['per_page']);
 
-        $indexDto = new DataTransferObject();
-        $indexDto->successMessage(
-            __('messages.successfully.show'),
-            $callback,
-            $this->model::$allowedIncludes
-        );
-
-        $indexDto->setIndex(true);
-
-        return $indexDto;
+        return $callback;
     }
 
-    public function store(): DataTransferObject
+    public function store(): model
     {
         $this->validate($this->data, 'store');
 
@@ -145,20 +140,14 @@ class BaseService
             }
         }
 
-        $storeDto = $this->show($callback->id, $this->model);
-
         DB::commit();
 
-        $storeDto->setMessage(__('messages.successfully.created'));
-
-        return $storeDto;
+        return $this->show($callback->id);
     }
 
-    public function show(int $id): DataTransferObject
+    public function show(int $id): Model
     {
-        $showDto = new DataTransferObject();
-
-        $callback = QueryBuilder::for($this->model)
+        $showed = QueryBuilder::for($this->model)
             ->allowedFields($this->model::$allowedFields)
             ->allowedIncludes($this->model::$allowedIncludes)
             ->where(
@@ -181,77 +170,42 @@ class BaseService
             )
             ->find($id);
 
-        if (!isset($callback)) {
-            $showDto->errorMessage(__('messages.errors.notfound', [
+        if (!isset($showed)) {
+            $this->notFoundResponse(data: [
                 'id' => $id,
-            ]));
-
-            return $showDto;
+            ]);
         }
 
-        $showDto->successMessage(
-            __('messages.successfully.show'),
-            $callback,
-            $this->model::$allowedIncludes
-        );
-
-        return $showDto;
+        return $showed;
     }
 
-    public function update($request, int $id): DataTransferObject
+    public function update(int $id): Collection
     {
         $this->validate($this->data, 'update', $id);
 
-        $updateDto = $this->show($id, $this->model);
+        $showed = $this->show($id);
 
-        if (!$updateDto->getSuccess()) {
-            return $updateDto;
-        }
+        DB::transaction(function () use ($showed) {
+            $showed->update($this->data());
 
-        DB::connection('pgsql_erp')->beginTransaction();
-
-        $updateDto->getData()->update($request);
-
-        foreach ($request as $indice => $value) {
-            if (is_array($value)) {
-                $updateDto->getData()->$indice()->sync($value);
+            foreach ($this->data as $indice => $value) {
+                if (is_array($value)) {
+                    $showed->$indice()->sync($value);
+                }
             }
-        }
+        });
 
-        $updateDto = $this->show($id, $this->model);
-
-        DB::connection('pgsql_erp')->commit();
-
-        $updateDto->successMessage(__('messages.successfully.updated'));
-
-        return $updateDto;
+        return $this->show($id);
     }
 
-    public function destroy($id): DataTransferObject
+    public function destroy($id): Collection
     {
-        $destroyDto = $this->show($id, $this->model);
+        $showed = $this->show($id);
 
-        if (!$destroyDto->getSuccess()) {
-            return $destroyDto;
-        }
+        DB::transaction(function () use ($showed) {
+            $showed->destroy();
+        });
 
-        DB::connection('pgsql_erp')->beginTransaction();
-
-        $destroyDto->getData()->destroy($id);
-
-        DB::connection('pgsql_erp')->commit();
-
-        $destroyDto->successMessage(__('messages.successfully.deleted'));
-
-        return $destroyDto;
-    }
-
-    public function status(): DataTransferObject
-    {
-        $statusDto = new DataTransferObject();
-
-        $statusDto->successMessage(__('messages.successfully.show'));
-
-        return $statusDto;
+        return $showed;
     }
 }
