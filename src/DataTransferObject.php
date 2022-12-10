@@ -2,13 +2,15 @@
 
 namespace GustavoSantarosa\LaravelToolPack;
 
+use Illuminate\Http\Resources\Json\ResourceCollection;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * DataTransferObject Classe que serve para transferência de dados entre o Service e o Controller
+ * DataTransferObject Classe que serve para transferência de dados entre o Service e o Controller.
+ *
+ * @deprecated deprecated since version 1.7.1
  *
  * @author Luis Gustavo Santarosa Pinto <bolota_xd@hotmail.com>
- *
  */
 class DataTransferObject extends ServiceProvider
 {
@@ -19,22 +21,24 @@ class DataTransferObject extends ServiceProvider
     private $data;
     private int     $internalCode;
     private int     $httpCode;
+    private $resource;
 
     public function __construct()
     {
         $this->success      = true;
         $this->include      = [];
         $this->index        = false;
-        $this->message      = "";
+        $this->message      = '';
         $this->data         = [];
         $this->internalCode = 2000;
         $this->httpCode     = 201;
     }
 
     /**
-     * setSuccess
+     * setSuccess.
      *
-     * @param  bool $value
+     * @param bool $value
+     *
      * @return void
      */
     public function setSuccess($value)
@@ -45,10 +49,9 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * setInclude function
+     * setInclude function.
      *
      * @param array|null $value
-     * @return DataTransferObject
      */
     public function setInclude(array $value): DataTransferObject
     {
@@ -58,9 +61,10 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * setIndex
+     * setIndex.
      *
-     * @param  bool $value
+     * @param bool $value
+     *
      * @return void
      */
     public function setIndex($value)
@@ -71,9 +75,10 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * message
+     * message.
      *
-     * @param  string $value
+     * @param string $value
+     *
      * @return void
      */
     public function setMessage($value)
@@ -84,9 +89,10 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * data
+     * data.
      *
-     * @param  mixed $value
+     * @param mixed $value
+     *
      * @return void
      */
     public function setData($value)
@@ -97,7 +103,21 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * success
+     * data.
+     *
+     * @param mixed $value
+     *
+     * @return void
+     */
+    public function setResource($value)
+    {
+        $this->resource = $value;
+
+        return $this;
+    }
+
+    /**
+     * success.
      *
      * @return bool
      */
@@ -107,7 +127,7 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * include
+     * include.
      *
      * @return array
      */
@@ -117,7 +137,7 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * include
+     * include.
      *
      * @return bool
      */
@@ -127,7 +147,7 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * message
+     * message.
      *
      * @return string
      */
@@ -137,7 +157,7 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * data
+     * data.
      *
      * @return $value
      */
@@ -147,7 +167,7 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * internalCode
+     * internalCode.
      *
      * @return mixed
      */
@@ -155,10 +175,12 @@ class DataTransferObject extends ServiceProvider
     {
         return $this->internalCode;
     }
+
     /**
-     * internalCode
+     * internalCode.
      *
-     * @param  mixed $code
+     * @param mixed $code
+     *
      * @return void
      */
     public function setInternalCode($code)
@@ -169,7 +191,7 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * HttpCode
+     * HttpCode.
      *
      * @return mixed
      */
@@ -177,10 +199,12 @@ class DataTransferObject extends ServiceProvider
     {
         return $this->httpCode;
     }
+
     /**
-     * HttpCode
+     * HttpCode.
      *
-     * @param  mixed $code
+     * @param mixed $code
+     *
      * @return void
      */
     public function setHttpCode($code)
@@ -191,10 +215,11 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * successMessage
+     * successMessage.
      *
-     * @param  string $message
-     * @param  mixed $data
+     * @param string $message
+     * @param mixed  $data
+     *
      * @return void
      */
     public function successMessage($message, $data = null, $include = [])
@@ -207,13 +232,7 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * ErrorMessage function
-     *
-     * @param string $message
-     * @param $data
-     * @param integer $internalCode
-     *
-     * @return self
+     * ErrorMessage function.
      */
     public function errorMessage(string $message, $data = null, int $internalCode = 9000, $httpCode = 500): self
     {
@@ -227,37 +246,41 @@ class DataTransferObject extends ServiceProvider
     }
 
     /**
-     * GetMessageDTO function
+     * GetMessageDTO function.
      *
      * @return void
      */
     public function getMessageDTO()
     {
         $callback = [
-            "success"      => $this->getSuccess(),
-            "internalCode" => $this->getInternalCode(),
-            "message"      => $this->getMessage(),
+            'success'      => $this->getSuccess(),
+            'internalCode' => $this->getInternalCode(),
+            'message'      => $this->getMessage(),
         ];
 
+        if ($this->resource) {
+            return $this->resource::collection(new ResourceCollection($this->getData()));
+        }
+
         if (count($this->getInclude()) > 0) {
-            $callback = array_merge($callback, ["include" => $this->getInclude()]);
+            $callback = array_merge($callback, ['include' => $this->getInclude()]);
         }
 
-        if (in_array(gettype($this->getData()), ["array"]) && count((array) $this->getData()) > 0) {
+        if (in_array(gettype($this->getData()), ['array']) && count((array) $this->getData()) > 0) {
             $callback = array_merge($callback, [
-                "data" => $this->getData()
+                'data' => $this->getData(),
             ]);
         }
 
-        if (in_array(gettype($this->getData()), ["object"]) && !is_null($this->getData())) {
+        if (in_array(gettype($this->getData()), ['object']) && !is_null($this->getData())) {
             $callback = array_merge($callback, [
-                "data" => $this->getData()->toArray()
+                'data' => $this->getData()->toArray(),
             ]);
         }
 
-        if (in_array(gettype($this->getData()), ["string", "numeric", "integer"]) && !empty($this->getData())) {
+        if (in_array(gettype($this->getData()), ['string', 'numeric', 'integer']) && !empty($this->getData())) {
             $callback = array_merge($callback, [
-                "data" => $this->getData()
+                'data' => $this->getData(),
             ]);
         }
 

@@ -2,93 +2,90 @@
 
 namespace GustavoSantarosa\LaravelToolPack;
 
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
-use GustavoSantarosa\LaravelToolPack\ReturnPrepare;
+use GustavoSantarosa\LaravelToolPack\Traits\ApiResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class BaseController extends Controller
 {
     use AuthorizesRequests;
     use DispatchesJobs;
     use ValidatesRequests;
+    use ApiResponse;
 
     protected $service;
+    protected $resource;
     protected $model;
-
-    public function __construct(
-        $service,
-    ) {
-        $this->service  = $service;
-    }
 
     /**
      * Display a listing of the resource.
-     *
-     * @return ReturnPrepare
      */
     public function index()
     {
-        return $this
-            ->service
-            ->index()
-            ->getMessageDTO();
+        return $this->okResponse(
+            $this->resource::Collection(
+                $this->service->index()
+            ),
+            include: $this->service->model::$allowedIncludes,
+            index: true
+        );
     }
 
     /**
      * Store the specified resource from storage.
      *
-     * @param  Request $request
+     * @param Request $request
      */
     public function store()
     {
         return $this
             ->service
-            ->store()
-            ->getMessageDTO();
+            ->store();
     }
 
     /**
-     * Atualizar
+     * Atualizar.
      *
-     * @param  mixed $request
-     * @param  mixed $id
+     * @param mixed $request
+     * @param mixed $id
      */
     public function update($id)
     {
         return $this
             ->service
-            ->update($id)
-            ->getMessageDTO();
+            ->update($id);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  int $id
-     * @return ReturnPrepare
+     * @param int $id
      */
-    public function show($id)
+    public function show($id): JsonResponse
     {
-        return $this
-            ->service
-            ->show($id)
-            ->getMessageDTO();
+        return $this->okResponse(
+            new $this->resource(
+                $this->service->show($id)
+            ),
+            include: $this->service->model::$allowedIncludes
+        );
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int $id
+     * @param int $id
+     *
      * @return ReturnPrepare
      */
     public function destroy($id)
     {
         return $this
             ->service
-            ->destroy($id)
-            ->getMessageDTO();
+            ->destroy($id);
     }
 }
