@@ -2,13 +2,14 @@
 
 namespace GustavoSantarosa\LaravelToolPack;
 
-use GustavoSantarosa\LaravelToolPack\Traits\ApiResponse;
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Routing\Controller;
+use App\Http\Resources\DefaultCollection;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Routing\Controller;
+use GustavoSantarosa\LaravelToolPack\Traits\ApiResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class BaseController extends Controller
 {
@@ -26,13 +27,7 @@ class BaseController extends Controller
      */
     public function index()
     {
-        return $this->okResponse(
-            $this->resource::Collection(
-                $this->service->index()
-            ),
-            include: $this->service->model::$allowedIncludes,
-            index: true
-        );
+        return new DefaultCollection($this->resource, $this->service->index());
     }
 
     /**
