@@ -130,19 +130,17 @@ class BaseService
     {
         $this->validate($this->data, 'store');
 
-        DB::beginTransaction();
+        return DB::transaction(function () {
+            $callback = $this->model->create($this->data);
 
-        $callback = $this->model->create($this->data);
-
-        foreach ($this->data as $indice => $value) {
-            if (is_array($value)) {
-                $callback->$indice()->sync($value);
+            foreach ($this->data as $indice => $value) {
+                if (is_array($value)) {
+                    $callback->$indice()->sync($value);
+                }
             }
-        }
 
-        DB::commit();
-
-        return $this->show($callback->id);
+            return $callback->refresh();
+        });
     }
 
     public function show(int $id): Model

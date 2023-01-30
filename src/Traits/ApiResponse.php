@@ -22,6 +22,29 @@ trait ApiResponse
             Response::HTTP_OK,
         );
     }
+    public function badRequestResponse(?string $message = null): void
+    {
+        $this->exceptionResponse(
+            $message,
+            Response::HTTP_BAD_REQUEST,
+            $this->customResponse(
+                success: false,
+                message: $message ?? __('messages.successfully.show')
+            ),
+        );
+    }
+
+    public function unauthorizedResponse(?string $message = null): void
+    {
+        $this->exceptionResponse(
+            $message,
+            Response::HTTP_UNAUTHORIZED,
+            $this->customResponse(
+                success: false,
+                message: $message ?? __('messages.successfully.show')
+            ),
+        );
+    }
 
     public function notFoundResponse(?string $message = null, array $data = [], array $arrayToAppend = []): void
     {
@@ -63,7 +86,7 @@ trait ApiResponse
         ];
     }
 
-    public function customResponse(bool $success, string $message = null, $data, array $arrayToAppend, ?array $include = [], bool $index = false)
+    public function customResponse(bool $success, string $message = null, $data = [], array $arrayToAppend = [], ?array $include = [], bool $index = false)
     {
         $content = [
             'success' => $success,
