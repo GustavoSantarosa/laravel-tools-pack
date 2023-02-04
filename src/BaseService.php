@@ -3,7 +3,6 @@
 namespace GustavoSantarosa\LaravelToolPack;
 
 use GustavoSantarosa\LaravelToolPack\Traits\ApiResponse;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -72,7 +71,9 @@ class BaseService
         $method       = new \ReflectionMethod(get_class($validation), 'rules');
         $methodParams = $method->getParameters();
 
-        // TODO Qyon: $validation->authorize();
+        if (!$validation->authorize()) {
+            $this->unauthorizedResponse('não autorizado');
+        }
 
         if (1 == count($methodParams) && 'id' == $methodParams[0]->name) {
             Validator::validate($data, $validation->rules($currentId), $validation->messages());
@@ -177,14 +178,14 @@ class BaseService
         return $showed;
     }
 
-    public function update(int $id): Collection
+    public function update(int $id): Model
     {
         $this->validate($this->data, 'update', $id);
 
         $showed = $this->show($id);
 
         DB::transaction(function () use ($showed) {
-            $showed->update($this->data());
+            $showed->update($this->data);
 
             foreach ($this->data as $indice => $value) {
                 if (is_array($value)) {
@@ -193,17 +194,11 @@ class BaseService
             }
         });
 
-        return $this->show($id);
+        return $showed->refresh();
     }
 
-    public function destroy($id): Collection
+    public function destroy($id): ?bool
     {
-        $showed = $this->show($id);
-
-        DB::transaction(function () use ($showed) {
-            $showed->destroy();
-        });
-
-        return $showed;
+        return $this->show($id)->delete();
     }
 }
