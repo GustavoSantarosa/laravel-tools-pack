@@ -2,14 +2,13 @@
 
 namespace GustavoSantarosa\LaravelToolPack;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Routing\Controller;
-use Illuminate\Foundation\Bus\DispatchesJobs;
-use GustavoSantarosa\LaravelToolPack\DefaultCollection;
-use Illuminate\Foundation\Validation\ValidatesRequests;
 use GustavoSantarosa\LaravelToolPack\Traits\ApiResponse;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class BaseController extends Controller
 {
@@ -37,9 +36,11 @@ class BaseController extends Controller
      */
     public function store()
     {
-        return $this
-            ->service
-            ->store();
+        return $this->okResponse(
+            new $this->resource(
+                $this->service->store()
+            )
+        );
     }
 
     /**
@@ -50,9 +51,11 @@ class BaseController extends Controller
      */
     public function update($id)
     {
-        return $this
-            ->service
-            ->update($id);
+        return $this->okResponse(
+            new $this->resource(
+                $this->service->update($id)
+            )
+        );
     }
 
     /**
@@ -75,7 +78,6 @@ class BaseController extends Controller
      *
      * @param int $id
      *
-     * @return ReturnPrepare
      */
     public function destroy($id)
     {
