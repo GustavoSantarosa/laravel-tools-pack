@@ -114,7 +114,6 @@ trait ApiResponse
 
     public function exceptionResponse(string $message, int $code, array $content): void
     {
-        dd("asd");
         throw new ApiResponseException(message: $message, code: $code, apiResponse: $content);
     }
 }
