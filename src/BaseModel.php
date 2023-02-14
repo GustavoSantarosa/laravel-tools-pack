@@ -95,7 +95,7 @@ class BaseModel extends Model
      *
      * @throws Exception
      */
-    public function whereIn(Builder $query, array $where = [], array $allowedFields = []): Builder
+    public function baseWhereIn(Builder $query, array $where = [], array $allowedFields = []): Builder
     {
         foreach ($where as $column => $in) {
             if (!in_array($column, $allowedFields)) {

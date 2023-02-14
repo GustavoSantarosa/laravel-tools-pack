@@ -49,7 +49,7 @@ trait ApiResponse
     public function notFoundResponse(?string $message = null, array $data = [], array $arrayToAppend = []): void
     {
         $this->exceptionResponse(
-            $message,
+            $message ?? __('messages.errors.notfound'),
             Response::HTTP_NOT_FOUND,
             $this->customResponse(
                 success: false,
@@ -114,6 +114,7 @@ trait ApiResponse
 
     public function exceptionResponse(string $message, int $code, array $content): void
     {
+        dd("asd");
         throw new ApiResponseException(message: $message, code: $code, apiResponse: $content);
     }
 }
