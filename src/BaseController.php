@@ -85,4 +85,13 @@ class BaseController extends Controller
             ->service
             ->destroy($id);
     }
+
+    public function restore(int $id): JsonResponse
+    {
+        $this->service->restore($id);
+
+        return $this->okResponse(
+            message: 'Restaurado com sucesso!'
+        );
+    }
 }
