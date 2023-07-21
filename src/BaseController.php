@@ -7,7 +7,6 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 
 class BaseController extends Controller
@@ -31,8 +30,6 @@ class BaseController extends Controller
 
     /**
      * Store the specified resource from storage.
-     *
-     * @param Request $request
      */
     public function store()
     {
@@ -45,9 +42,6 @@ class BaseController extends Controller
 
     /**
      * Atualizar.
-     *
-     * @param mixed $request
-     * @param mixed $id
      */
     public function update($id)
     {
@@ -77,13 +71,16 @@ class BaseController extends Controller
      * Remove the specified resource from storage.
      *
      * @param int $id
-     *
      */
     public function destroy($id)
     {
-        return $this
-            ->service
-            ->destroy($id);
+        $this
+        ->service
+        ->destroy($id);
+
+        return $this->okResponse(
+            message: 'Excluido com sucesso!'
+        );
     }
 
     public function restore(int $id): JsonResponse

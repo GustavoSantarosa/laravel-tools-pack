@@ -25,10 +25,10 @@ class BaseService
     protected $data;
 
     public function __construct(
-        ?array $data = null,
-        ?object $model = null,
-        ?object $storeValidation = null,
-        ?object $updateValidation = null
+        array $data = null,
+        object $model = null,
+        object $storeValidation = null,
+        object $updateValidation = null
     ) {
         $this->storeValidation  = $storeValidation;
         $this->updateValidation = $updateValidation;
