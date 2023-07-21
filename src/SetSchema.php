@@ -4,12 +4,12 @@ namespace GustavoSantarosa\LaravelToolPack;
 
 trait SetSchema
 {
-    public function __construct()
+    public function initializeSetSchema()
     {
         $this->setSchema();
     }
 
-    public function SetSchema()
+    public function setSchema()
     {
         $this->setTable(strtolower(explode('\\', static::class)[3]).'.'.$this->getTable());
     }

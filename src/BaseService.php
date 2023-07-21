@@ -2,10 +2,12 @@
 
 namespace GustavoSantarosa\LaravelToolPack;
 
+use App\Events\Created;
 use GustavoSantarosa\LaravelToolPack\Traits\ApiResponse;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -23,15 +25,23 @@ class BaseService
     protected $data;
 
     public function __construct(
-        array $data,
-        object $model,
-        ?object $storeValidation = null,
-        ?object $updateValidation = null
+        array $data = null,
+        object $model = null,
+        object $storeValidation = null,
+        object $updateValidation = null
     ) {
         $this->storeValidation  = $storeValidation;
         $this->updateValidation = $updateValidation;
-        $this->model            = $model;
-        $this->data             = $data;
+
+        if (null === $model) {
+            $va          = explode('\\', static::class);
+            $model       = "App\Models\Erp\\".$va[3].'\\'.Str::ucfirst(Str::Replace('Service', '', end($va)));
+            $this->model = new $model();
+        } else {
+            $this->model = $model;
+        }
+
+        $this->data = $data;
     }
 
     /**
@@ -72,7 +82,7 @@ class BaseService
         $methodParams = $method->getParameters();
 
         if (!$validation->authorize()) {
-            $this->unauthorizedResponse('não autorizado');
+            $this->unauthorizedResponse(trans('billing.error.exceded'));
         }
 
         if (1 == count($methodParams) && 'id' == $methodParams[0]->name) {
@@ -97,6 +107,7 @@ class BaseService
             ->allowedFilters([
                 AllowedFilter::scope('between'),
                 AllowedFilter::scope('date'),
+                AllowedFilter::trashed(),
             ])
             ->where(
                 function ($query) {
@@ -129,9 +140,18 @@ class BaseService
 
     public function store(): model
     {
+        $transaction = $this->storeQuitly();
+
+        event(new Created($transaction));
+
+        return $transaction;
+    }
+
+    public function storeQuitly(): model
+    {
         $this->validate($this->data, 'store');
 
-        return DB::transaction(function () {
+        $transaction = DB::transaction(function () {
             $callback = $this->model->create($this->data);
 
             foreach ($this->data as $indice => $value) {
@@ -142,6 +162,8 @@ class BaseService
 
             return $callback->refresh();
         });
+
+        return $transaction;
     }
 
     public function show(int $id): Model
@@ -200,5 +222,25 @@ class BaseService
     public function destroy($id): ?bool
     {
         return $this->show($id)->delete();
+    }
+
+    public function restore(int $id): bool
+    {
+        $model = $this->model::onlyTrashed()->find($id);
+
+        if (!isset($model)) {
+            $this->notFoundResponse(data: [
+                'id' => $id,
+            ]);
+        }
+
+        return $model->restore();
+    }
+
+    public function setData(object|array $value): self
+    {
+        $this->data = $value;
+
+        return $this;
     }
 }
