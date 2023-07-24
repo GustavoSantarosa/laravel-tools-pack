@@ -1,34 +1,34 @@
 {
-    "name": "gustavosantarosa/laravel-tool-pack",
-    "license": "MIT",
-    "homepage":"http://www.gustavosantarosa.esy.es/",
-    "description": "tool packs to complement the laravel",
-    "require": {
-        "php":"^8.1",
-        "laravel/framework": "^9.0",
-        "spatie/laravel-query-builder": "^5.0"
-    },
-    "autoload": {
-        "psr-4": {
-            "GustavoSantarosa\\LaravelToolPack\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "Luis Gustavo Santarosa",
-            "email": "gustavo.santarosa@qyon.com",
-            "role": "Developer"
-        }        
-    ],
-    "support": {
-        "email": "gustavo.santarosa@qyon.com"
-    },
-    "minimum-stability": "dev",
-    "extra": {
-        "laravel": {
-            "providers": [
-                "GustavoSantarosa\\LaravelToolPack\\Provider\\LaravelToolPackProvider"				
-            ]
-        }
+  "name": "gustavosantarosa/laravel-tool-pack",
+  "license": "MIT",
+  "homepage": "http://www.gustavosantarosa.esy.es/",
+  "description": "tool packs to complement the laravel",
+  "require": {
+    "php": "^8.1",
+    "laravel/framework": "^9.0 | ^10.0",
+    "spatie/laravel-query-builder": "^5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "GustavoSantarosa\\LaravelToolPack\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "Luis Gustavo Santarosa",
+      "email": "gustavo.santarosa@qyon.com",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "gustavo.santarosa@qyon.com"
+  },
+  "minimum-stability": "dev",
+  "extra": {
+    "laravel": {
+      "providers": [
+        "GustavoSantarosa\\LaravelToolPack\\Provider\\LaravelToolPackProvider"
+      ]
+    }
+  }
 }
